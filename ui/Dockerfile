@@ -10,6 +10,8 @@ COPY . /ui/.
 
 WORKDIR $FOLDER
 
+RUN npm config set registry https://registry.npmmirror.com/
+
 RUN npm install
 
 EXPOSE 4173 
