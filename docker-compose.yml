@@ -38,6 +38,8 @@ services:
     networks:
       - app-network
     container_name: travel_adviser_ui
+    expose:
+      - "4173"
     ports:
       - 4173:4173
   nginx:
