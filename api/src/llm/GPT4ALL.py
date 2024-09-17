@@ -2,8 +2,6 @@ import os
 
 from langchain.schema import StrOutputParser
 
-from langchain_community.chat_message_histories import Neo4jChatMessageHistory
-from langchain_community.graphs import Neo4jGraph
 from langchain_community.llms import GPT4All
 
 from langchain_core.callbacks import AsyncCallbackHandler
@@ -11,15 +9,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from wrapper.no_save_neo4j_chat_history_wrapper import NoSaveNeo4jChatMessageHistory
+from wrapper.neo4j_client import Neo4jClient
 from .basellm import BaseLLM
-
-
-graph = Neo4jGraph(
-    url=os.getenv('NEO4J_URL'),
-    username=os.getenv('NEO4J_USER'),
-    password=os.getenv('NEO4J_PASS'),
-    database=os.getenv('NEO4J_DATABASE'),
-)
 
 
 def get_session_history_method(save_conversation):
@@ -30,13 +21,15 @@ def get_session_history_method(save_conversation):
 
 
 def get_save_session_history(session_id):
-    return Neo4jChatMessageHistory(session_id=session_id, graph=graph)
+    return Neo4jClient(
+        base_url=os.getenv('NEO4J_CLIENT_URL'),
+        session_id=session_id)
 
 
 def get_no_save_session_history(session_id):
-    return NoSaveNeo4jChatMessageHistory(session_id=session_id, graph=graph)
-
-
+    return NoSaveNeo4jChatMessageHistory(
+        base_url=os.getenv('NEO4J_CLIENT_URL'),
+        session_id=session_id)
 
 
 class CustomAsyncCallbackHandler(AsyncCallbackHandler):

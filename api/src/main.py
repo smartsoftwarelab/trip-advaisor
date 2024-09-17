@@ -13,25 +13,15 @@ from embedding.GPT4ALL import Gpt4AllEmbedding
 from embedding.OpenAI import OpenAIEmbedding
 from llm.OpenAI import ChatOpenAIChat
 from llm.GPT4ALL import Gpt4AllChat
-from wrapper.neo4j_wrapper import Neo4jDatabase
-from wrapper.neo4j_chathistory_wrapper import Neo4jChatHistoryDatabase
-
-neo4j_connection = Neo4jDatabase(
-    host=os.getenv('NEO4J_URL'),
-    user=os.getenv('NEO4J_USER'),
-    password=os.getenv('NEO4J_PASS'),
-    database=os.getenv('NEO4J_DATABASE'),
-)
+from wrapper.neo4j_client import Neo4jClient
 
 # Initialize LLM modules
 openai_api_key = os.environ.get("OPENAI_API_KEY", None)
 
 
 def create_neo4j_chat_history_connection(session_id: str):
-    return Neo4jChatHistoryDatabase(
-        host=os.getenv('NEO4J_URL'),
-        user=os.getenv('NEO4J_USER'),
-        password=os.getenv('NEO4J_PASS'),
+    return Neo4jClient(
+        base_url=os.getenv('NEO4J_CLIENT_URL'),
         session_id=session_id)
 
 
@@ -126,7 +116,7 @@ async def websocket_endpoint(websocket: WebSocket):
             embedder = create_embedder(model_name)
 
             similarity = Neo4jSimilarity(
-                database=neo4j_connection,
+                database=create_neo4j_chat_history_connection(session_id),
                 embedder=embedder,
                 llm=model
             )
@@ -210,7 +200,7 @@ async def get_chat_history(session_id: str):
 
     chat_history_db = create_neo4j_chat_history_connection(session_id)
 
-    messages = chat_history_db.get_messages()
+    messages = chat_history_db.messages
 
     return {"messages": messages}
 
@@ -227,7 +217,7 @@ async def clear_chat_history(session_id: str):
 
     chat_history_db = create_neo4j_chat_history_connection(session_id)
 
-    chat_history_db.clear_messages()
+    chat_history_db.clear()
 
     return {"success": True}
 
@@ -235,4 +225,4 @@ async def clear_chat_history(session_id: str):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, port=int(os.environ.get("PORT", 8000)), host="127.0.0.1")
+    uvicorn.run(app, port=int(os.environ.get("PORT", 8001)), host="127.0.0.1")

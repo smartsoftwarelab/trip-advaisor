@@ -7,7 +7,7 @@ from langchain_core.prompts.chat import MessagesPlaceholder
 from components.base_component import BaseComponent
 from llm.basellm import BaseLLM
 from embedding.base_embedding import BaseEmbedding
-from wrapper.neo4j_wrapper import Neo4jDatabase
+from wrapper.neo4j_client import Neo4jClient
 from Utils.data_formatter import format_entries
 
 from .classifier import is_travel_related_query
@@ -48,7 +48,7 @@ def create_prompt(use_history: bool):
 
 
 class Neo4jSimilarity(BaseComponent):
-    def __init__(self, database: Neo4jDatabase, embedder: BaseEmbedding, llm: BaseLLM) -> None:
+    def __init__(self, database: Neo4jClient, embedder: BaseEmbedding, llm: BaseLLM) -> None:
         self.database = database
         self.embedder = embedder
         self.llm = llm
